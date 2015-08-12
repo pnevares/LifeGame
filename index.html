@@ -57,7 +57,7 @@
             this.addCell(xPos, yPos);
         };
 
-        this.start = function(){
+        this.loop = function(){
             if(!processing) {
                 processing = 1;
                 iteration++;
@@ -68,9 +68,19 @@
                 processing = 0;
 
                 if(this.continuous){
-                    window.setTimeout(function(obj){obj.start()},this.speed, this);
+                    window.setTimeout(function(obj){obj.loop()},this.speed, this);
                 }
             }
+        };
+
+        this.start = function(){
+            this.continuous = true;
+            this.loop();
+        };
+
+        this.step = function(){
+            this.continuous = false;
+            this.loop();
         };
 
 
@@ -197,8 +207,8 @@
         gameObj.gameWindow.addEventListener('click', function(evt){gameObj.activateCellViaMouse(evt)}, false);
     </script>
     <input type="button" value="Start" onClick="gameObj.start()">
-    <input type="button" value="stop" onClick="gameObj.continuous = false">
-    <input type="button" value="turn on continuous" onClick="gameObj.continuous = true">
-    <input type="button" value="seed randomly" onClick="gameObj.seedRandomly() = true">
+    <input type="button" value="Stop" onClick="gameObj.continuous = false">
+    <input type="button" value="Step" onClick="gameObj.step()">
+    <input type="button" value="seed randomly" onClick="gameObj.seedRandomly()">
 </body>
 </html>
