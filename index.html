@@ -54,7 +54,12 @@
 
             var xPos = (mouseX - (mouseX % this.windowScale))/this.windowScale;
             var yPos = (mouseY - (mouseY % this.windowScale))/this.windowScale;
-            this.addCell(xPos, yPos);
+            if (evt.which == 1) {
+                this.addCell(xPos, yPos);
+            }
+            if (evt.which == 2) {
+                this.removeCell(xPos, yPos);
+            }
         };
 
         this.loop = function(){
@@ -103,7 +108,11 @@
             if(cells[xPos][yPos] != 1) {
                 cells[xPos][yPos] = 1;
                 this.drawCell(xPos, yPos);
-            }else{
+            }
+        };
+
+        this.removeCell = function(xPos,yPos){
+            if(cells[xPos][yPos] == 1) {
                 cells[xPos][yPos] = 0;
                 this.hideCell(xPos, yPos);
             }
@@ -205,6 +214,7 @@
         var gameObj = new Game;
         gameObj.initialize();
         gameObj.gameWindow.addEventListener('click', function(evt){gameObj.activateCellViaMouse(evt)}, false);
+        gameObj.gameWindow.addEventListener('mousemove', function(evt){gameObj.activateCellViaMouse(evt)}, false);
     </script>
     <input type="button" value="Start" onClick="gameObj.start()">
     <input type="button" value="Stop" onClick="gameObj.continuous = false">
