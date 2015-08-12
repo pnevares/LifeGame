@@ -1,0 +1,204 @@
+<style>
+    #displayWindow{
+        border:1px solid #999;
+    }
+</style>
+
+<script type="text/javascript">
+    Game = function(){
+        this.windowScale = 10;
+        this.gameWidth = 1280;
+        this.gameHeight = 1024;
+        this.speed = 100;
+        this.gameWindow = "";
+        this.continuous = true;
+
+        var cells = [];
+        var r = Math.floor(Math.random() * 254);
+        var g = Math.floor(Math.random() * 254);
+        var b = Math.floor(Math.random() * 254);
+        var iteration = 0;
+        var colorIteration;
+        var processing = 0;
+        var currentCells;
+
+        this.initialize = function(){
+            this.gameWindow = document.getElementById("displayWindow");
+            this.gameWindow.setAttribute('width', this.gameWidth);
+            this.gameWindow.setAttribute('height', this.gameHeight);
+            this.gameWidth = Math.round(this.gameWidth / this.windowScale);
+            this.gameHeight = Math.round(this.gameHeight / this.windowScale);
+
+            // set initial cell states
+            for(var x = 0; x < this.gameWidth; x++){
+                var yCells = [];
+                for(var y = 0; y < this.gameHeight; y++){
+                     yCells[y] = 0;
+                }
+                cells[x] = yCells;
+            }
+        };
+
+        this.seedRandomly = function(){
+            for(var i=0; i < cells.length; i++){
+                for(var ii = 0; ii < cells[i].length; ii++){
+                    cells[i][ii] = Math.round(Math.random());
+                }
+            }
+        };
+
+        this.activateCellViaMouse = function(evt){
+            var canvasPosition = this.gameWindow.getBoundingClientRect();
+            var mouseX = evt.clientX - canvasPosition.left;
+            var mouseY = evt.clientY - canvasPosition.top;
+
+            var xPos = (mouseX - (mouseX % this.windowScale))/this.windowScale;
+            var yPos = (mouseY - (mouseY % this.windowScale))/this.windowScale;
+            this.addCell(xPos, yPos);
+        };
+
+        this.start = function(){
+            if(!processing) {
+                processing = 1;
+                iteration++;
+                currentCells = 0;
+                currentCells = cloneCellArray(cells);
+                processCells();
+                this.redraw();
+                processing = 0;
+
+                if(this.continuous){
+                    window.setTimeout(function(obj){obj.start()},this.speed, this);
+                }
+            }
+        };
+
+
+        this.redraw = function(){
+            var currentContext = this.gameWindow.getContext('2d');
+            // Clear canvas
+            currentContext.clearRect(0, 0, this.gameWindow.width, this.gameWindow.height);
+
+            // Redraw all active cells
+            for(x = 0; x < cells.length; x++){
+                for(y = 0; y < cells[x].length; y++){
+                    if(cells[x][y] == true){
+                        this.drawCell(x, y);
+                    }
+                }
+            }
+        };
+
+        this.addCell = function(xPos,yPos){
+            if(cells[xPos][yPos] != 1) {
+                cells[xPos][yPos] = 1;
+                this.drawCell(xPos, yPos);
+            }else{
+                cells[xPos][yPos] = 0;
+                this.hideCell(xPos, yPos);
+            }
+        };
+
+        this.drawCell = function(xPos, yPos){
+            var currentContext = this.gameWindow.getContext('2d');
+            var actualX = xPos * this.windowScale;
+            var actualY = yPos * this.windowScale;
+
+            currentContext.fillStyle = colorCellsCycle();
+            //currentContext.fillStyle = colorCellRandomly();
+            currentContext.fillRect(actualX, actualY, this.windowScale, this.windowScale);
+        };
+
+        this.hideCell = function(xPos, yPos){
+            var currentContext = this.gameWindow.getContext('2d');
+            var actualX = xPos * this.windowScale;
+            var actualY = yPos * this.windowScale;
+
+            currentContext.fillStyle = "rgb(255, 255, 255)";
+            currentContext.fillRect(actualX, actualY, this.windowScale, this.windowScale);
+        }
+
+        var processCells = function(){
+            for(var x = 0; x < currentCells.length; x++){
+                for(var y = 0; y < currentCells[x].length; y++){
+                    var liveNeighbors = 0;
+                    for(var offsetX = -1; offsetX < 2; offsetX++){
+                        for(var offsetY = -1; offsetY < 2; offsetY++){
+                            var neighborX = x + offsetX;
+                            var neighborY = y + offsetY;
+                            if(neighborX == x && neighborY == y ){
+                                // console.log('--> skipping ['+offsetX+']['+offsetY+']');
+                            }else{
+                                if(typeof(currentCells[neighborX]) != 'undefined' && typeof(currentCells[neighborX][neighborY] != 'undefined')) {
+                                    liveNeighbors = liveNeighbors + currentCells[neighborX][neighborY];
+                                }
+                            }
+                        }
+                    }
+                    applyRules(x, y, liveNeighbors);
+                }
+            }
+        };
+
+        var cloneCellArray = function(cellArray){
+            var clonedArray = [];
+            for (var i = 0; i < cellArray.length; i++) {
+                clonedArray[i] = cellArray[i].slice();
+            }
+            return clonedArray
+        };
+
+        var applyRules = function(xPos, yPos, neighborCount){
+            var currentCellState = cells[xPos][yPos];
+            if(currentCellState == 0 && neighborCount == 3){
+                cells[xPos][yPos] = 1;
+                return;
+            }
+            if(currentCellState == 1 && (neighborCount == 2 || neighborCount == 3)){
+                return;
+            }
+            cells[xPos][yPos] = 0;
+        };
+
+        var colorCellRandomly = function(){
+            var r = Math.floor(Math.random() * 254);
+            var g = Math.floor(Math.random() * 254);
+            var b = Math.floor(Math.random() * 254);
+
+            return "rgb("+r+","+g+","+b+")";
+        };
+
+        var colorCellsCycle = function(){
+            if(colorIteration != iteration){
+                colorIteration = iteration;
+                colorArray = [r, g, b];
+                for(i = 0; i < colorArray.length; i++){
+                    var modifier = (Math.floor(Math.random() * 3) - 1) * Math.floor(Math.random() * 10);
+                    colorArray[i] = colorArray[i] + modifier;
+                    colorArray[i] = (colorArray[i] < 1) ? 1 : colorArray[i];
+                    colorArray[i] = (colorArray[i] > 254) ? 254 : colorArray[i];
+                }
+                r = colorArray[0];
+                g = colorArray[1];
+                b = colorArray[2];
+            }
+            return "rgb("+r+","+g+","+b+")";
+        };
+    }
+</script>
+
+<html>
+<body>
+    <canvas id="displayWindow"></canvas>
+
+    <script type="text/javascript">
+        var gameObj = new Game;
+        gameObj.initialize();
+        gameObj.gameWindow.addEventListener('click', function(evt){gameObj.activateCellViaMouse(evt)}, false);
+    </script>
+    <input type="button" value="Start" onClick="gameObj.start()">
+    <input type="button" value="stop" onClick="gameObj.continuous = false">
+    <input type="button" value="turn on continuous" onClick="gameObj.continuous = true">
+    <input type="button" value="seed randomly" onClick="gameObj.seedRandomly() = true">
+</body>
+</html>
