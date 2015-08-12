@@ -54,10 +54,10 @@
 
             var xPos = (mouseX - (mouseX % this.windowScale))/this.windowScale;
             var yPos = (mouseY - (mouseY % this.windowScale))/this.windowScale;
-            if (evt.which == 1) {
+            if (evt.buttons == 1) {
                 this.addCell(xPos, yPos);
             }
-            if (evt.which == 2) {
+            if (evt.buttons == 2) {
                 this.removeCell(xPos, yPos);
             }
         };
