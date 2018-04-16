@@ -46,7 +46,7 @@
 
             var xPos = (mouseX - (mouseX % this.windowScale))/this.windowScale;
             var yPos = (mouseY - (mouseY % this.windowScale))/this.windowScale;
-            if ((evt.type == 'click' && evt.button == 0) || (evt.type == 'mousemove' && evt.buttons > 0)) {
+            if ((evt.type === 'click' && evt.button === 0) || (evt.type === 'mousemove' && evt.buttons > 0)) {
                 this.toggleCell(xPos, yPos);
             }
         };
@@ -144,11 +144,11 @@
 
         var applyRules = function(xPos, yPos, neighborCount){
             var currentCellState = cells[xPos][yPos];
-            if(currentCellState == false && neighborCount == 3){
+            if(currentCellState === false && neighborCount === 3){
                 cells[xPos][yPos] = true;
                 return;
             }
-            if(currentCellState == true && (neighborCount == 2 || neighborCount == 3)){
+            if(currentCellState === true && (neighborCount === 2 || neighborCount === 3)){
                 return;
             }
             cells[xPos][yPos] = false;
