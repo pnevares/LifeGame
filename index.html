@@ -30,7 +30,7 @@
             this.gameRows = Math.round(this.gameHeight / this.windowScale);
 
             // set initial cell states
-            const emptyColumn = Array(this.gameRows).fill(0);
+            const emptyColumn = Array(this.gameRows).fill(false);
             cells = Array(this.gameColumns).fill([...emptyColumn]);
         };
 
@@ -88,11 +88,11 @@
         };
 
         this.toggleCell = function(xPos,yPos){
-            if(cells[xPos][yPos] != 1) {
-                cells[xPos][yPos] = 1;
+            if(cells[xPos][yPos] != true) {
+                cells[xPos][yPos] = true;
                 this.drawCell(xPos, yPos);
             } else {
-                cells[xPos][yPos] = 0;
+                cells[xPos][yPos] = false;
                 this.hideCell(xPos, yPos);
             }
         };
@@ -144,14 +144,14 @@
 
         var applyRules = function(xPos, yPos, neighborCount){
             var currentCellState = cells[xPos][yPos];
-            if(currentCellState == 0 && neighborCount == 3){
-                cells[xPos][yPos] = 1;
+            if(currentCellState == false && neighborCount == 3){
+                cells[xPos][yPos] = true;
                 return;
             }
-            if(currentCellState == 1 && (neighborCount == 2 || neighborCount == 3)){
+            if(currentCellState == true && (neighborCount == 2 || neighborCount == 3)){
                 return;
             }
-            cells[xPos][yPos] = 0;
+            cells[xPos][yPos] = false;
         };
 
         var colorCellRandomly = function(){
