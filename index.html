@@ -51,7 +51,7 @@
 
             var xPos = (mouseX - (mouseX % this.windowScale))/this.windowScale;
             var yPos = (mouseY - (mouseY % this.windowScale))/this.windowScale;
-            if (evt.buttons > 0) {
+            if ((evt.type == 'click' && evt.button == 0) || (evt.type == 'mousemove' && evt.buttons > 0)) {
                 this.toggleCell(xPos, yPos);
             }
         };
