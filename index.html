@@ -7,8 +7,8 @@
 <script type="text/javascript">
     const Game = function(){
         this.windowScale = 5;
-        this.gameWidth = 640;
-        this.gameHeight = 512;
+        this.gameWidth = 800;
+        this.gameHeight = 600;
         this.speed = 250;
         this.gameWindow = "";
         this.continuous = true;
@@ -26,17 +26,12 @@
             this.gameWindow = document.getElementById("displayWindow");
             this.gameWindow.setAttribute('width', this.gameWidth);
             this.gameWindow.setAttribute('height', this.gameHeight);
-            this.gameWidth = Math.round(this.gameWidth / this.windowScale);
-            this.gameHeight = Math.round(this.gameHeight / this.windowScale);
+            this.gameColumns = Math.round(this.gameWidth / this.windowScale);
+            this.gameRows = Math.round(this.gameHeight / this.windowScale);
 
             // set initial cell states
-            for(var x = 0; x < this.gameWidth; x++){
-                var yCells = [];
-                for(var y = 0; y < this.gameHeight; y++){
-                     yCells[y] = 0;
-                }
-                cells[x] = yCells;
-            }
+            const emptyColumn = Array(this.gameRows).fill(0);
+            cells = Array(this.gameColumns).fill([...emptyColumn]);
         };
 
         this.seedRandomly = function(){
