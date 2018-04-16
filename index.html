@@ -89,11 +89,7 @@
             currentContext.clearRect(0, 0, this.gameWindow.width, this.gameWindow.height);
 
             // Redraw all active cells
-            cells.forEach((row, x) => row.forEach((cell, y) => {
-                if(cell) {
-                    this.drawCell(x, y);
-                }
-            }));
+            cells.forEach((row, x) => row.forEach((cell, y) => cell && this.drawCell(x, y)));
         };
 
         this.toggleCell = function(xPos,yPos){
