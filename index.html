@@ -40,7 +40,7 @@
         };
 
         this.seedRandomly = function(){
-            cells.map(outer => outer.map(() => Math.round(Math.random())));
+            cells = cells.map(outer => outer.map(() => Math.round(Math.random())));
             this.redraw();
         };
 
@@ -89,13 +89,11 @@
             currentContext.clearRect(0, 0, this.gameWindow.width, this.gameWindow.height);
 
             // Redraw all active cells
-            for(x = 0; x < cells.length; x++){
-                for(y = 0; y < cells[x].length; y++){
-                    if(cells[x][y] == true){
-                        this.drawCell(x, y);
-                    }
+            cells.forEach((row, x) => row.forEach((cell, y) => {
+                if(cell) {
+                    this.drawCell(x, y);
                 }
-            }
+            }));
         };
 
         this.toggleCell = function(xPos,yPos){
