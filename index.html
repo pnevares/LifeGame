@@ -35,7 +35,7 @@
         };
 
         this.seedRandomly = function(){
-            cells = cells.map(outer => outer.map(() => Math.round(Math.random())));
+            cells = cells.map(outer => outer.map(() => Math.random() < 0.5));
             this.redraw();
         };
 
