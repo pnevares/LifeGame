@@ -45,6 +45,7 @@
                     cells[i][ii] = Math.round(Math.random());
                 }
             }
+            this.redraw();
         };
 
         this.activateCellViaMouse = function(evt){
@@ -153,11 +154,7 @@
         };
 
         var cloneCellArray = function(cellArray){
-            var clonedArray = [];
-            for (var i = 0; i < cellArray.length; i++) {
-                clonedArray[i] = cellArray[i].slice();
-            }
-            return clonedArray
+            return cellArray.map(c => [...c]);
         };
 
         var applyRules = function(xPos, yPos, neighborCount){
