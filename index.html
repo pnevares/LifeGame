@@ -84,35 +84,21 @@
             currentContext.clearRect(0, 0, this.gameWindow.width, this.gameWindow.height);
 
             // Redraw all active cells
-            cells.forEach((row, x) => row.forEach((cell, y) => cell && this.drawCell(x, y)));
+            cells.forEach((row, x) => row.forEach((cell, y) => this.drawCell(x, y, cell)));
         };
 
         this.toggleCell = function(xPos,yPos){
-            if(cells[xPos][yPos] != true) {
-                cells[xPos][yPos] = true;
-                this.drawCell(xPos, yPos);
-            } else {
-                cells[xPos][yPos] = false;
-                this.hideCell(xPos, yPos);
-            }
+            cells[xPos][yPos] = !cells[xPos][yPos];
+            this.drawCell(xPos, yPos, cells[xPos][yPos]);
         };
 
-        this.drawCell = function(xPos, yPos){
+        this.drawCell = function(xPos, yPos, alive){
             var currentContext = this.gameWindow.getContext('2d');
             var actualX = xPos * this.windowScale;
             var actualY = yPos * this.windowScale;
 
-            currentContext.fillStyle = colorCellsCycle();
+            currentContext.fillStyle = alive ? colorCellsCycle() : "rgb(255, 255, 255)";
             //currentContext.fillStyle = colorCellRandomly();
-            currentContext.fillRect(actualX, actualY, this.windowScale, this.windowScale);
-        };
-
-        this.hideCell = function(xPos, yPos){
-            var currentContext = this.gameWindow.getContext('2d');
-            var actualX = xPos * this.windowScale;
-            var actualY = yPos * this.windowScale;
-
-            currentContext.fillStyle = "rgb(255, 255, 255)";
             currentContext.fillRect(actualX, actualY, this.windowScale, this.windowScale);
         };
 
