@@ -5,11 +5,11 @@
 </style>
 
 <script type="text/javascript">
-    Game = function(){
-        this.windowScale = 10;
-        this.gameWidth = 1280;
-        this.gameHeight = 1024;
-        this.speed = 100;
+    const Game = function(){
+        this.windowScale = 5;
+        this.gameWidth = 640;
+        this.gameHeight = 512;
+        this.speed = 250;
         this.gameWindow = "";
         this.continuous = true;
 
@@ -54,11 +54,8 @@
 
             var xPos = (mouseX - (mouseX % this.windowScale))/this.windowScale;
             var yPos = (mouseY - (mouseY % this.windowScale))/this.windowScale;
-            if (evt.buttons == 1) {
-                this.addCell(xPos, yPos);
-            }
-            if (evt.buttons == 2) {
-                this.removeCell(xPos, yPos);
+            if (evt.buttons > 0) {
+                this.toggleCell(xPos, yPos);
             }
         };
 
@@ -104,15 +101,11 @@
             }
         };
 
-        this.addCell = function(xPos,yPos){
+        this.toggleCell = function(xPos,yPos){
             if(cells[xPos][yPos] != 1) {
                 cells[xPos][yPos] = 1;
                 this.drawCell(xPos, yPos);
-            }
-        };
-
-        this.removeCell = function(xPos,yPos){
-            if(cells[xPos][yPos] == 1) {
+            } else {
                 cells[xPos][yPos] = 0;
                 this.hideCell(xPos, yPos);
             }
@@ -204,21 +197,25 @@
             return "rgb("+r+","+g+","+b+")";
         };
     }
+
+    const gameObj = new Game;
+
+    window.onload = () => {
+        gameObj.initialize();
+        gameObj.gameWindow.addEventListener('click', function(evt){gameObj.activateCellViaMouse(evt)}, false);
+        gameObj.gameWindow.addEventListener('mousemove', function(evt){gameObj.activateCellViaMouse(evt)}, false);
+    };
 </script>
 
 <html>
 <body>
-    <canvas id="displayWindow"></canvas>
+    <div>
+        <input type="button" value="Start" onClick="gameObj.start()">
+        <input type="button" value="Stop" onClick="gameObj.continuous = false">
+        <input type="button" value="Step" onClick="gameObj.step()">
+        <input type="button" value="seed randomly" onClick="gameObj.seedRandomly()">
+    </div>
 
-    <script type="text/javascript">
-        var gameObj = new Game;
-        gameObj.initialize();
-        gameObj.gameWindow.addEventListener('click', function(evt){gameObj.activateCellViaMouse(evt)}, false);
-        gameObj.gameWindow.addEventListener('mousemove', function(evt){gameObj.activateCellViaMouse(evt)}, false);
-    </script>
-    <input type="button" value="Start" onClick="gameObj.start()">
-    <input type="button" value="Stop" onClick="gameObj.continuous = false">
-    <input type="button" value="Step" onClick="gameObj.step()">
-    <input type="button" value="seed randomly" onClick="gameObj.seedRandomly()">
+    <canvas id="displayWindow"></canvas>
 </body>
 </html>
