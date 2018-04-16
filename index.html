@@ -40,11 +40,7 @@
         };
 
         this.seedRandomly = function(){
-            for(var i=0; i < cells.length; i++){
-                for(var ii = 0; ii < cells[i].length; ii++){
-                    cells[i][ii] = Math.round(Math.random());
-                }
-            }
+            cells.map(outer => outer.map(() => Math.round(Math.random())));
             this.redraw();
         };
 
