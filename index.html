@@ -171,7 +171,7 @@
             if(colorIteration != iteration){
                 colorIteration = iteration;
                 colorArray = [r, g, b];
-                colorArray.map(c => {
+                colorArray = colorArray.map(c => {
                     const newColor = c + (Math.floor(Math.random() * 3) - 1) * Math.floor(Math.random() * 10);
                     return Math.min(Math.max(newColor, 1), 254);
                 });
