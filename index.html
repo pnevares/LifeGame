@@ -181,12 +181,10 @@
             if(colorIteration != iteration){
                 colorIteration = iteration;
                 colorArray = [r, g, b];
-                for(i = 0; i < colorArray.length; i++){
-                    var modifier = (Math.floor(Math.random() * 3) - 1) * Math.floor(Math.random() * 10);
-                    colorArray[i] = colorArray[i] + modifier;
-                    colorArray[i] = (colorArray[i] < 1) ? 1 : colorArray[i];
-                    colorArray[i] = (colorArray[i] > 254) ? 254 : colorArray[i];
-                }
+                colorArray.map(c => {
+                    const newColor = c + (Math.floor(Math.random() * 3) - 1) * Math.floor(Math.random() * 10);
+                    return Math.min(Math.max(newColor, 1), 254);
+                });
                 r = colorArray[0];
                 g = colorArray[1];
                 b = colorArray[2];
