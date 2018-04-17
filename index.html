@@ -9,7 +9,7 @@
         this.windowScale = 5;
         this.gameWidth = 800;
         this.gameHeight = 600;
-        this.speed = 250;
+        this.speed = 25;
         this.gameWindow = "";
         this.continuous = true;
 
@@ -21,7 +21,7 @@
         var b = randomColorChannel();
         var iteration = 0;
         var colorIteration;
-        var processing = 0;
+        var processing = false;
 
         this.initialize = function(){
             this.gameWindow = document.getElementById("displayWindow");
@@ -38,7 +38,6 @@
                 .fill(false)
                 .map(() => [...emptyColumn]);
         };
-
 
         this.seedRandomly = function(){
             cells = cells.map(outer => outer.map(() => Math.random() < 0.5));
@@ -59,11 +58,11 @@
 
         this.loop = function(){
             if(!processing) {
-                processing = 1;
+                processing = true;
                 iteration++;
                 processCells();
                 this.redraw();
-                processing = 0;
+                processing = false;
 
                 if(this.continuous){
                     window.setTimeout(function(obj){obj.loop()},this.speed, this);
@@ -71,16 +70,10 @@
             }
         };
 
-        this.start = function(){
-            this.continuous = true;
+        this.step = function(start){
+            this.continuous = start;
             this.loop();
         };
-
-        this.step = function(){
-            this.continuous = false;
-            this.loop();
-        };
-
 
         this.redraw = function(){
             var currentContext = this.gameWindow.getContext("2d");
@@ -111,7 +104,7 @@
                     return countX + [-1, 0, 1].reduce((countY, offsetY) => {
                         var neighborX = x + offsetX;
                         var neighborY = y + offsetY;
-                        if(!(neighborX == x && neighborY == y) && cells[neighborX] && cells[neighborX][neighborY]) {
+                        if(!(neighborX === x && neighborY === y) && cells[neighborX] && cells[neighborX][neighborY]) {
                             return countY + 1;
                         }
                         return countY;
@@ -132,7 +125,7 @@
         };
 
         var colorCellsCycle = function(){
-            if(colorIteration != iteration){
+            if(colorIteration !== iteration){
                 colorIteration = iteration;
                 [r, g, b] = [r, g, b].map(c => {
                     const newColor = c + (Math.floor(Math.random() * 3) - 1) * Math.floor(Math.random() * 10);
@@ -155,7 +148,7 @@
 <html>
 <body>
     <div>
-        <input type="button" value="Start" onClick="gameObj.start()">
+        <input type="button" value="Start" onClick="gameObj.step(true)">
         <input type="button" value="Stop" onClick="gameObj.continuous = false">
         <input type="button" value="Step" onClick="gameObj.step()">
         <input type="button" value="seed randomly" onClick="gameObj.seedRandomly()">
