@@ -31,7 +31,7 @@
             this.gameColumns = Math.round(this.gameWidth / this.windowScale);
             this.gameRows = Math.round(this.gameHeight / this.windowScale);
 
-            this.colorFn = colorCellsCycle;
+            this.colorFn = colorCellsCycle; // or colorCellsRandomly
 
             // set initial cell states
             const emptyColumn = Array(this.gameRows).fill(false);
@@ -90,7 +90,7 @@
             currentContext.clearRect(0, 0, this.gameWindow.width, this.gameWindow.height);
 
             // Redraw all cells
-            cells.forEach((row, x) => row.forEach((cell, y) => this.drawCell(x, y, cell)));
+            cells.forEach((column, x) => column.forEach((cell, y) => this.drawCell(x, y, cell)));
         };
 
         this.toggleCell = function(xPos,yPos){
@@ -108,25 +108,19 @@
         };
 
         var processCells = function(){
-            for(var x = 0; x < currentCells.length; x++){
-                for(var y = 0; y < currentCells[x].length; y++){
-                    var liveNeighbors = 0;
-                    for(var offsetX = -1; offsetX < 2; offsetX++){
-                        for(var offsetY = -1; offsetY < 2; offsetY++){
-                            var neighborX = x + offsetX;
-                            var neighborY = y + offsetY;
-                            if(neighborX == x && neighborY == y ){
-                                // console.log("--> skipping ["+offsetX+"]["+offsetY+"]");
-                            }else{
-                                if(currentCells[neighborX] && currentCells[neighborX][neighborY]) {
-                                    liveNeighbors++;
-                                }
-                            }
+            currentCells.forEach((currentColumn, x) => currentColumn.forEach((currentCell, y) => {
+                const liveNeighbors = [-1, 0, 1].reduce((countX, offsetX) => {
+                    return countX + [-1, 0, 1].reduce((countY, offsetY) => {
+                        var neighborX = x + offsetX;
+                        var neighborY = y + offsetY;
+                        if(!(neighborX == x && neighborY == y) && currentCells[neighborX] && currentCells[neighborX][neighborY]) {
+                            return countY + 1;
                         }
-                    }
-                    applyRules(x, y, liveNeighbors);
-                }
-            }
+                        return countY;
+                    }, 0);
+                }, 0);
+                applyRules(x, y, liveNeighbors);
+            }));
         };
 
         var applyRules = function(xPos, yPos, neighborCount){
