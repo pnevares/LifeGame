@@ -62,8 +62,7 @@
             if(!processing) {
                 processing = 1;
                 iteration++;
-                currentCells = 0;
-                currentCells = cloneCellArray(cells);
+                currentCells = cells.map(c => [...c]); // clone
                 processCells();
                 this.redraw();
                 processing = 0;
@@ -90,7 +89,7 @@
             // Clear canvas
             currentContext.clearRect(0, 0, this.gameWindow.width, this.gameWindow.height);
 
-            // Redraw all active cells
+            // Redraw all cells
             cells.forEach((row, x) => row.forEach((cell, y) => this.drawCell(x, y, cell)));
         };
 
@@ -128,10 +127,6 @@
                     applyRules(x, y, liveNeighbors);
                 }
             }
-        };
-
-        var cloneCellArray = function(cellArray){
-            return cellArray.map(c => [...c]);
         };
 
         var applyRules = function(xPos, yPos, neighborCount){
