@@ -29,6 +29,8 @@
             this.gameColumns = Math.round(this.gameWidth / this.windowScale);
             this.gameRows = Math.round(this.gameHeight / this.windowScale);
 
+            this.colorFn = colorCellsCycle;
+
             // set initial cell states
             const emptyColumn = Array(this.gameRows).fill(false);
             cells = Array(this.gameColumns)
@@ -99,8 +101,7 @@
             var actualX = xPos * this.windowScale;
             var actualY = yPos * this.windowScale;
 
-            currentContext.fillStyle = alive ? colorCellsCycle() : "rgb(255, 255, 255)";
-            //currentContext.fillStyle = colorCellRandomly();
+            currentContext.fillStyle = alive ? this.colorFn() : "rgb(255, 255, 255)";
             currentContext.fillRect(actualX, actualY, this.windowScale, this.windowScale);
         };
 
@@ -142,7 +143,7 @@
             cells[xPos][yPos] = false;
         };
 
-        var colorCellRandomly = function(){
+        var colorCellsRandomly = function(){
             var r = Math.floor(Math.random() * 254);
             var g = Math.floor(Math.random() * 254);
             var b = Math.floor(Math.random() * 254);
@@ -158,9 +159,7 @@
                     const newColor = c + (Math.floor(Math.random() * 3) - 1) * Math.floor(Math.random() * 10);
                     return Math.min(Math.max(newColor, 1), 254);
                 });
-                r = colorArray[0];
-                g = colorArray[1];
-                b = colorArray[2];
+                [r, g, b] = colorArray;
             }
             return `rgb(${r}, ${g}, ${b})`;
         };
