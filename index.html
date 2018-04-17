@@ -22,7 +22,6 @@
         var iteration = 0;
         var colorIteration;
         var processing = 0;
-        var currentCells;
 
         this.initialize = function(){
             this.gameWindow = document.getElementById("displayWindow");
@@ -62,7 +61,6 @@
             if(!processing) {
                 processing = 1;
                 iteration++;
-                currentCells = cells.map(c => [...c]); // clone
                 processCells();
                 this.redraw();
                 processing = 0;
@@ -108,24 +106,24 @@
         };
 
         var processCells = function(){
-            cells = currentCells.map((currentColumn, x) => currentColumn.map((currentCell, y) => {
+            cells = cells.map((currentColumn, x) => currentColumn.map((cell, y) => {
                 const liveNeighbors = [-1, 0, 1].reduce((countX, offsetX) => {
                     return countX + [-1, 0, 1].reduce((countY, offsetY) => {
                         var neighborX = x + offsetX;
                         var neighborY = y + offsetY;
-                        if(!(neighborX == x && neighborY == y) && currentCells[neighborX] && currentCells[neighborX][neighborY]) {
+                        if(!(neighborX == x && neighborY == y) && cells[neighborX] && cells[neighborX][neighborY]) {
                             return countY + 1;
                         }
                         return countY;
                     }, 0);
                 }, 0);
-                return applyRules(currentCell, liveNeighbors);
+                return applyRules(cell, liveNeighbors);
             }));
         };
 
-        var applyRules = function(currentCell, neighborCount){
-            return (!currentCell && neighborCount === 3) ||
-                (currentCell && (neighborCount === 2 || neighborCount === 3));
+        var applyRules = function(cell, neighborCount){
+            return (!cell && neighborCount === 3) ||
+                (cell && (neighborCount === 2 || neighborCount === 3));
         };
 
         var colorCellsRandomly = function(){
