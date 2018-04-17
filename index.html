@@ -5,44 +5,52 @@
 </style>
 
 <script type="text/javascript">
-    const Game = function(){
-        this.windowScale = 5;
-        this.gameWidth = 800;
-        this.gameHeight = 600;
-        this.speed = 25;
-        this.gameWindow = "";
-        this.continuous = true;
+    class Game {
+        constructor() {
+            this.windowScale = 5;
+            this.gameWidth = 800;
+            this.gameHeight = 600;
+            this.speed = 25;
+            this.gameWindow = "";
+            this.continuous = true;
 
-        const randomColorChannel = () => Math.floor(Math.random() * 254);
+            this.cells = [];
+            this.color = {
+                r: this.randomColorChannel(),
+                g: this.randomColorChannel(),
+                b: this.randomColorChannel(),
+            };
+            this.iteration = 0;
+            this.colorIteration;
+            this.processing = false;
+        }
 
-        var cells = [];
-        let [r, g, b] = [randomColorChannel(), randomColorChannel(), randomColorChannel()];
-        var iteration = 0;
-        var colorIteration;
-        var processing = false;
+        randomColorChannel() {
+            return Math.floor(Math.random() * 254);
+        }
 
-        this.initialize = function(){
+        initialize() {
             this.gameWindow = document.getElementById("displayWindow");
             this.gameWindow.setAttribute("width", this.gameWidth);
             this.gameWindow.setAttribute("height", this.gameHeight);
             this.gameColumns = Math.round(this.gameWidth / this.windowScale);
             this.gameRows = Math.round(this.gameHeight / this.windowScale);
 
-            this.colorFn = colorCellsCycle; // or colorCellsRandomly
+            this.colorFn = this.colorCellsCycle; // or this.colorCellsRandomly
 
             // set initial cell states
             const emptyColumn = Array(this.gameRows).fill(false);
-            cells = Array(this.gameColumns)
+            this.cells = Array(this.gameColumns)
                 .fill(false)
                 .map(() => [...emptyColumn]);
-        };
+        }
 
-        this.seedRandomly = function(){
-            cells = cells.map(outer => outer.map(() => Math.random() < 0.5));
+        seedRandomly() {
+            this.cells = this.cells.map(outer => outer.map(() => Math.random() < 0.5));
             this.redraw();
-        };
+        }
 
-        this.activateCellViaMouse = function(evt){
+        activateCellViaMouse(evt) {
             var canvasPosition = this.gameWindow.getBoundingClientRect();
             var mouseX = evt.clientX - canvasPosition.left;
             var mouseY = evt.clientY - canvasPosition.top;
@@ -52,86 +60,88 @@
             if ((evt.type === "click" && evt.button === 0) || (evt.type === "mousemove" && evt.buttons > 0)) {
                 this.toggleCell(xPos, yPos);
             }
-        };
+        }
 
-        this.loop = function(){
-            if(!processing) {
-                processing = true;
-                iteration++;
-                processCells();
+        loop() {
+            if(!this.processing) {
+                this.processing = true;
+                this.iteration++;
+                this.processCells();
                 this.redraw();
-                processing = false;
+                this.processing = false;
 
                 if(this.continuous){
                     window.setTimeout(function(obj){obj.loop()},this.speed, this);
                 }
             }
-        };
+        }
 
-        this.step = function(start){
+        step(start) {
             this.continuous = start;
             this.loop();
-        };
+        }
 
-        this.redraw = function(){
+        redraw() {
             var currentContext = this.gameWindow.getContext("2d");
             // Clear canvas
             currentContext.clearRect(0, 0, this.gameWindow.width, this.gameWindow.height);
 
             // Redraw all cells
-            cells.forEach((column, x) => column.forEach((cell, y) => this.drawCell(x, y, cell)));
-        };
+            this.cells.forEach((column, x) => column.forEach((cell, y) => this.drawCell(x, y, cell)));
+        }
 
-        this.toggleCell = function(xPos,yPos){
-            cells[xPos][yPos] = !cells[xPos][yPos];
-            this.drawCell(xPos, yPos, cells[xPos][yPos]);
-        };
+        toggleCell(xPos,yPos) {
+            this.cells[xPos][yPos] = !this.cells[xPos][yPos];
+            this.drawCell(xPos, yPos, this.cells[xPos][yPos]);
+        }
 
-        this.drawCell = function(xPos, yPos, alive){
+        drawCell(xPos, yPos, alive) {
             var currentContext = this.gameWindow.getContext("2d");
             var actualX = xPos * this.windowScale;
             var actualY = yPos * this.windowScale;
 
             currentContext.fillStyle = alive ? this.colorFn() : "rgb(255, 255, 255)";
             currentContext.fillRect(actualX, actualY, this.windowScale, this.windowScale);
-        };
+        }
 
-        var processCells = function(){
-            cells = cells.map((currentColumn, x) => currentColumn.map((cell, y) => {
+        processCells() {
+            this.cells = this.cells.map((currentColumn, x) => currentColumn.map((cell, y) => {
                 const liveNeighbors = [-1, 0, 1].reduce((countX, offsetX) => {
                     return countX + [-1, 0, 1].reduce((countY, offsetY) => {
                         var neighborX = x + offsetX;
                         var neighborY = y + offsetY;
-                        if(!(neighborX === x && neighborY === y) && cells[neighborX] && cells[neighborX][neighborY]) {
+                        if(!(neighborX === x && neighborY === y) && this.cells[neighborX] && this.cells[neighborX][neighborY]) {
                             return countY + 1;
                         }
                         return countY;
                     }, 0);
                 }, 0);
-                return applyRules(cell, liveNeighbors);
+                return this.applyRules(cell, liveNeighbors);
             }));
-        };
+        }
 
-        var applyRules = function(cell, neighborCount){
+        applyRules(cell, neighborCount) {
             return (!cell && neighborCount === 3) ||
                 (cell && (neighborCount === 2 || neighborCount === 3));
-        };
+        }
 
-        var colorCellsRandomly = function(){
-            const c = [randomColorChannel(), randomColorChannel(), randomColorChannel()];
-            return `rgb(${c[0]}, ${c[1]}, ${c[2]})`;
-        };
-
-        var colorCellsCycle = function(){
-            if(colorIteration !== iteration){
-                colorIteration = iteration;
-                [r, g, b] = [r, g, b].map(c => {
-                    const newColor = c + (Math.floor(Math.random() * 3) - 1) * Math.floor(Math.random() * 10);
-                    return Math.min(Math.max(newColor, 1), 254);
-                });
-            }
+        colorCellsRandomly() {
+            const [r, g, b] = [this.randomColorChannel(), this.randomColorChannel(), this.randomColorChannel()];
             return `rgb(${r}, ${g}, ${b})`;
-        };
+        }
+
+        colorCellsCycle() {
+            if(this.colorIteration !== this.iteration){
+                this.colorIteration = this.iteration;
+                this.color = Object.keys(this.color).reduce((colorObject, c) => {
+                    const color = this.color[c];
+                    const newColor = color + (Math.floor(Math.random() * 3) - 1) * Math.floor(Math.random() * 10);
+                    colorObject[c] = Math.min(Math.max(newColor, 1), 254);
+                    return colorObject;
+                }, {});
+            }
+            return `rgb(${this.color.r}, ${this.color.g}, ${this.color.b})`;
+        }
     }
 
     const gameObj = new Game;
