@@ -108,7 +108,7 @@
         };
 
         var processCells = function(){
-            currentCells.forEach((currentColumn, x) => currentColumn.forEach((currentCell, y) => {
+            cells = currentCells.map((currentColumn, x) => currentColumn.map((currentCell, y) => {
                 const liveNeighbors = [-1, 0, 1].reduce((countX, offsetX) => {
                     return countX + [-1, 0, 1].reduce((countY, offsetY) => {
                         var neighborX = x + offsetX;
@@ -119,20 +119,13 @@
                         return countY;
                     }, 0);
                 }, 0);
-                applyRules(x, y, liveNeighbors);
+                return applyRules(currentCell, liveNeighbors);
             }));
         };
 
-        var applyRules = function(xPos, yPos, neighborCount){
-            var currentCellState = cells[xPos][yPos];
-            if(currentCellState === false && neighborCount === 3){
-                cells[xPos][yPos] = true;
-                return;
-            }
-            if(currentCellState === true && (neighborCount === 2 || neighborCount === 3)){
-                return;
-            }
-            cells[xPos][yPos] = false;
+        var applyRules = function(currentCell, neighborCount){
+            return (!currentCell && neighborCount === 3) ||
+                (currentCell && (neighborCount === 2 || neighborCount === 3));
         };
 
         var colorCellsRandomly = function(){
