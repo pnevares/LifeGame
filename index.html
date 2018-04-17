@@ -13,10 +13,12 @@
         this.gameWindow = "";
         this.continuous = true;
 
+        const randomColorChannel = () => Math.floor(Math.random() * 254);
+
         var cells = [];
-        var r = Math.floor(Math.random() * 254);
-        var g = Math.floor(Math.random() * 254);
-        var b = Math.floor(Math.random() * 254);
+        var r = randomColorChannel();
+        var g = randomColorChannel();
+        var b = randomColorChannel();
         var iteration = 0;
         var colorIteration;
         var processing = 0;
@@ -37,6 +39,7 @@
                 .fill(false)
                 .map(() => [...emptyColumn]);
         };
+
 
         this.seedRandomly = function(){
             cells = cells.map(outer => outer.map(() => Math.random() < 0.5));
@@ -144,22 +147,17 @@
         };
 
         var colorCellsRandomly = function(){
-            var r = Math.floor(Math.random() * 254);
-            var g = Math.floor(Math.random() * 254);
-            var b = Math.floor(Math.random() * 254);
-
-            return `rgb(${r}, ${g}, ${b})`;
+            const c = [randomColorChannel(), randomColorChannel(), randomColorChannel()];
+            return `rgb(${c[0]}, ${c[1]}, ${c[2]})`;
         };
 
         var colorCellsCycle = function(){
             if(colorIteration != iteration){
                 colorIteration = iteration;
-                colorArray = [r, g, b];
-                colorArray = colorArray.map(c => {
+                [r, g, b] = [r, g, b].map(c => {
                     const newColor = c + (Math.floor(Math.random() * 3) - 1) * Math.floor(Math.random() * 10);
                     return Math.min(Math.max(newColor, 1), 254);
                 });
-                [r, g, b] = colorArray;
             }
             return `rgb(${r}, ${g}, ${b})`;
         };
