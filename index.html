@@ -31,7 +31,8 @@
 
             // set initial cell states
             const emptyColumn = Array(this.gameRows).fill(false);
-            cells = Array(this.gameColumns).fill([...emptyColumn]);
+            cells = Array(this.gameColumns).fill(false);
+            cells = cells.map(() => [...emptyColumn]);
         };
 
         this.seedRandomly = function(){
