@@ -31,8 +31,9 @@
 
             // set initial cell states
             const emptyColumn = Array(this.gameRows).fill(false);
-            cells = Array(this.gameColumns).fill(false);
-            cells = cells.map(() => [...emptyColumn]);
+            cells = Array(this.gameColumns)
+                .fill(false)
+                .map(() => [...emptyColumn]);
         };
 
         this.seedRandomly = function(){
@@ -114,8 +115,8 @@
                             if(neighborX == x && neighborY == y ){
                                 // console.log('--> skipping ['+offsetX+']['+offsetY+']');
                             }else{
-                                if(typeof(currentCells[neighborX]) != 'undefined' && typeof(currentCells[neighborX][neighborY] != 'undefined')) {
-                                    liveNeighbors = liveNeighbors + currentCells[neighborX][neighborY];
+                                if(currentCells[neighborX] && currentCells[neighborX][neighborY]) {
+                                    liveNeighbors++;
                                 }
                             }
                         }
