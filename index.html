@@ -24,8 +24,8 @@
 
         this.initialize = function(){
             this.gameWindow = document.getElementById("displayWindow");
-            this.gameWindow.setAttribute('width', this.gameWidth);
-            this.gameWindow.setAttribute('height', this.gameHeight);
+            this.gameWindow.setAttribute("width", this.gameWidth);
+            this.gameWindow.setAttribute("height", this.gameHeight);
             this.gameColumns = Math.round(this.gameWidth / this.windowScale);
             this.gameRows = Math.round(this.gameHeight / this.windowScale);
 
@@ -48,7 +48,7 @@
 
             var xPos = (mouseX - (mouseX % this.windowScale))/this.windowScale;
             var yPos = (mouseY - (mouseY % this.windowScale))/this.windowScale;
-            if ((evt.type === 'click' && evt.button === 0) || (evt.type === 'mousemove' && evt.buttons > 0)) {
+            if ((evt.type === "click" && evt.button === 0) || (evt.type === "mousemove" && evt.buttons > 0)) {
                 this.toggleCell(xPos, yPos);
             }
         };
@@ -81,7 +81,7 @@
 
 
         this.redraw = function(){
-            var currentContext = this.gameWindow.getContext('2d');
+            var currentContext = this.gameWindow.getContext("2d");
             // Clear canvas
             currentContext.clearRect(0, 0, this.gameWindow.width, this.gameWindow.height);
 
@@ -95,7 +95,7 @@
         };
 
         this.drawCell = function(xPos, yPos, alive){
-            var currentContext = this.gameWindow.getContext('2d');
+            var currentContext = this.gameWindow.getContext("2d");
             var actualX = xPos * this.windowScale;
             var actualY = yPos * this.windowScale;
 
@@ -113,7 +113,7 @@
                             var neighborX = x + offsetX;
                             var neighborY = y + offsetY;
                             if(neighborX == x && neighborY == y ){
-                                // console.log('--> skipping ['+offsetX+']['+offsetY+']');
+                                // console.log("--> skipping ["+offsetX+"]["+offsetY+"]");
                             }else{
                                 if(currentCells[neighborX] && currentCells[neighborX][neighborY]) {
                                     liveNeighbors++;
@@ -147,7 +147,7 @@
             var g = Math.floor(Math.random() * 254);
             var b = Math.floor(Math.random() * 254);
 
-            return "rgb("+r+","+g+","+b+")";
+            return `rgb(${r}, ${g}, ${b})`;
         };
 
         var colorCellsCycle = function(){
@@ -162,7 +162,7 @@
                 g = colorArray[1];
                 b = colorArray[2];
             }
-            return "rgb("+r+","+g+","+b+")";
+            return `rgb(${r}, ${g}, ${b})`;
         };
     }
 
@@ -170,8 +170,8 @@
 
     window.onload = () => {
         gameObj.initialize();
-        gameObj.gameWindow.addEventListener('click', function(evt){gameObj.activateCellViaMouse(evt)}, false);
-        gameObj.gameWindow.addEventListener('mousemove', function(evt){gameObj.activateCellViaMouse(evt)}, false);
+        gameObj.gameWindow.addEventListener("click", function(evt){gameObj.activateCellViaMouse(evt)}, false);
+        gameObj.gameWindow.addEventListener("mousemove", function(evt){gameObj.activateCellViaMouse(evt)}, false);
     };
 </script>
 
