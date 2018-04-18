@@ -11,15 +11,12 @@
             this.gameWidth = 800;
             this.gameHeight = 600;
             this.speed = 25;
-            this.gameWindow = "";
+            this.gameWindow = null;
+            this.context = null;
             this.continuous = true;
 
             this.cells = [];
-            this.color = {
-                r: this.randomColorChannel(),
-                g: this.randomColorChannel(),
-                b: this.randomColorChannel(),
-            };
+            this.color = [this.randomColorChannel(), this.randomColorChannel(), this.randomColorChannel()];
             this.iteration = 0;
             this.colorIteration;
             this.processing = false;
@@ -35,8 +32,9 @@
             this.gameWindow.setAttribute("height", this.gameHeight);
             this.gameColumns = Math.round(this.gameWidth / this.windowScale);
             this.gameRows = Math.round(this.gameHeight / this.windowScale);
+            this.context = this.gameWindow.getContext("2d");
 
-            this.colorFn = this.colorCellsCycle; // or this.colorCellsRandomly
+            this.colorFn = this.colorCellsRandomly; // or this.colorCellsRandomly
 
             // set initial cell states
             const emptyColumn = Array(this.gameRows).fill(false);
@@ -82,9 +80,8 @@
         }
 
         redraw() {
-            var currentContext = this.gameWindow.getContext("2d");
             // Clear canvas
-            currentContext.clearRect(0, 0, this.gameWindow.width, this.gameWindow.height);
+            this.context.clearRect(0, 0, this.gameWindow.width, this.gameWindow.height);
 
             // Redraw all cells
             this.cells.forEach((column, x) => column.forEach((cell, y) => this.drawCell(x, y, cell)));
@@ -96,12 +93,11 @@
         }
 
         drawCell(xPos, yPos, alive) {
-            var currentContext = this.gameWindow.getContext("2d");
             var actualX = xPos * this.windowScale;
             var actualY = yPos * this.windowScale;
 
-            currentContext.fillStyle = alive ? this.colorFn() : "rgb(255, 255, 255)";
-            currentContext.fillRect(actualX, actualY, this.windowScale, this.windowScale);
+            this.context.fillStyle = alive ? this.colorFn() : "rgb(255, 255, 255)";
+            this.context.fillRect(actualX, actualY, this.windowScale, this.windowScale);
         }
 
         processCells() {
@@ -126,21 +122,22 @@
         }
 
         colorCellsRandomly() {
-            const [r, g, b] = [this.randomColorChannel(), this.randomColorChannel(), this.randomColorChannel()];
-            return `rgb(${r}, ${g}, ${b})`;
+            return `rgb(
+                ${this.randomColorChannel()},
+                ${this.randomColorChannel()},
+                ${this.randomColorChannel()}
+            )`;
         }
 
         colorCellsCycle() {
             if(this.colorIteration !== this.iteration){
                 this.colorIteration = this.iteration;
-                this.color = Object.keys(this.color).reduce((colorObject, c) => {
-                    const color = this.color[c];
-                    const newColor = color + (Math.floor(Math.random() * 3) - 1) * Math.floor(Math.random() * 10);
-                    colorObject[c] = Math.min(Math.max(newColor, 1), 254);
-                    return colorObject;
-                }, {});
+                this.color = this.color.map(c => {
+                    const newColor = c + (Math.floor(Math.random() * 3) - 1) * Math.floor(Math.random() * 10);
+                    return Math.min(Math.max(newColor, 1), 254);
+                });
             }
-            return `rgb(${this.color.r}, ${this.color.g}, ${this.color.b})`;
+            return `rgb(${this.color.join(",")})`;
         }
     }
 
