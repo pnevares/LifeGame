@@ -10,7 +10,7 @@
       this.windowScale = 5;
       this.gameWidth = 800;
       this.gameHeight = 600;
-      this.speed = 25;
+      this.interval = 25;
       this.gameWindow = null;
       this.context = null;
       this.continuous = true;
@@ -78,7 +78,7 @@
         this.processing = false;
 
         if (this.continuous) {
-          window.setTimeout(obj => obj.loop(), this.speed, this);
+          window.setTimeout(obj => obj.loop(), this.interval, this);
         }
       }
     }
@@ -165,6 +165,10 @@
       }
       return `rgb(${this.color.join(",")})`;
     }
+
+    speed(factor) {
+      this.interval /= factor;
+    }
   }
 
   const gameObj = new Game();
@@ -187,14 +191,16 @@
 <html>
   <body>
     <div>
-      <input type="button" value="Start" onClick="gameObj.step(true)" />
-      <input type="button" value="Stop" onClick="gameObj.continuous = false" />
-      <input type="button" value="Step" onClick="gameObj.step()" />
+      <input type="button" value="Start" onclick="gameObj.step(true)" />
+      <input type="button" value="Stop" onclick="gameObj.continuous = false" />
+      <input type="button" value="Step" onclick="gameObj.step()" />
       <input
         type="button"
-        value="seed randomly"
+        value="Random Seed"
         onClick="gameObj.seedRandomly()"
       />
+      <input type="button" value="Slower" onclick="gameObj.speed(0.5)" />
+      <input type="button" value="Faster" onclick="gameObj.speed(2)" />
     </div>
 
     <canvas id="displayWindow"></canvas>
