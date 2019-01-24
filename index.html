@@ -78,13 +78,7 @@
         this.processing = false;
 
         if (this.continuous) {
-          window.setTimeout(
-            function(obj) {
-              obj.loop();
-            },
-            this.speed,
-            this
-          );
+          window.setTimeout(obj => obj.loop(), this.speed, this);
         }
       }
     }
@@ -179,16 +173,12 @@
     gameObj.initialize();
     gameObj.gameWindow.addEventListener(
       "click",
-      function(evt) {
-        gameObj.activateCellViaMouse(evt);
-      },
+      evt => gameObj.activateCellViaMouse(evt),
       false
     );
     gameObj.gameWindow.addEventListener(
       "mousemove",
-      function(evt) {
-        gameObj.activateCellViaMouse(evt);
-      },
+      evt => gameObj.activateCellViaMouse(evt),
       false
     );
   };
