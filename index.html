@@ -1,160 +1,212 @@
 <style>
-    #displayWindow{
-        border:1px solid #999;
-    }
+  #displayWindow {
+    border: 1px solid #999;
+  }
 </style>
 
 <script type="text/javascript">
-    class Game {
-        constructor() {
-            this.windowScale = 5;
-            this.gameWidth = 800;
-            this.gameHeight = 600;
-            this.speed = 25;
-            this.gameWindow = null;
-            this.context = null;
-            this.continuous = true;
+  class Game {
+    constructor() {
+      this.windowScale = 5;
+      this.gameWidth = 800;
+      this.gameHeight = 600;
+      this.speed = 25;
+      this.gameWindow = null;
+      this.context = null;
+      this.continuous = true;
 
-            this.cells = [];
-            this.color = [this.randomColorChannel(), this.randomColorChannel(), this.randomColorChannel()];
-            this.iteration = 0;
-            this.colorIteration;
-            this.processing = false;
+      this.cells = [];
+      this.color = [
+        this.randomColorChannel(),
+        this.randomColorChannel(),
+        this.randomColorChannel()
+      ];
+      this.iteration = 0;
+      this.colorIteration;
+      this.processing = false;
+    }
+
+    randomColorChannel() {
+      return Math.floor(Math.random() * 254);
+    }
+
+    initialize() {
+      this.gameWindow = document.getElementById("displayWindow");
+      this.gameWindow.setAttribute("width", this.gameWidth);
+      this.gameWindow.setAttribute("height", this.gameHeight);
+      this.gameColumns = Math.round(this.gameWidth / this.windowScale);
+      this.gameRows = Math.round(this.gameHeight / this.windowScale);
+      this.context = this.gameWindow.getContext("2d");
+
+      this.colorFn = this.colorCellsCycle; // or this.colorCellsRandomly
+
+      // set initial cell states
+      const emptyColumn = Array(this.gameRows).fill(false);
+      this.cells = Array(this.gameColumns)
+        .fill(false)
+        .map(() => [...emptyColumn]);
+    }
+
+    seedRandomly() {
+      this.cells = this.cells.map(outer =>
+        outer.map(() => Math.random() < 0.5)
+      );
+      this.redraw();
+    }
+
+    activateCellViaMouse(evt) {
+      var canvasPosition = this.gameWindow.getBoundingClientRect();
+      var mouseX = evt.clientX - canvasPosition.left;
+      var mouseY = evt.clientY - canvasPosition.top;
+
+      var xPos = (mouseX - (mouseX % this.windowScale)) / this.windowScale;
+      var yPos = (mouseY - (mouseY % this.windowScale)) / this.windowScale;
+      if (
+        (evt.type === "click" && evt.button === 0) ||
+        (evt.type === "mousemove" && evt.buttons > 0)
+      ) {
+        this.toggleCell(xPos, yPos);
+      }
+    }
+
+    loop() {
+      if (!this.processing) {
+        this.processing = true;
+        this.iteration++;
+        this.processCells();
+        this.redraw();
+        this.processing = false;
+
+        if (this.continuous) {
+          window.setTimeout(
+            function(obj) {
+              obj.loop();
+            },
+            this.speed,
+            this
+          );
         }
+      }
+    }
 
-        randomColorChannel() {
-            return Math.floor(Math.random() * 254);
-        }
+    step(start) {
+      this.continuous = start;
+      this.loop();
+    }
 
-        initialize() {
-            this.gameWindow = document.getElementById("displayWindow");
-            this.gameWindow.setAttribute("width", this.gameWidth);
-            this.gameWindow.setAttribute("height", this.gameHeight);
-            this.gameColumns = Math.round(this.gameWidth / this.windowScale);
-            this.gameRows = Math.round(this.gameHeight / this.windowScale);
-            this.context = this.gameWindow.getContext("2d");
+    redraw() {
+      this.cells.forEach((column, x) =>
+        column.forEach((cell, y) => this.drawCell(x, y, cell))
+      );
+    }
 
-            this.colorFn = this.colorCellsCycle; // or this.colorCellsRandomly
+    toggleCell(xPos, yPos) {
+      this.cells[xPos][yPos] = !this.cells[xPos][yPos];
+      this.drawCell(xPos, yPos, this.cells[xPos][yPos]);
+    }
 
-            // set initial cell states
-            const emptyColumn = Array(this.gameRows).fill(false);
-            this.cells = Array(this.gameColumns)
-                .fill(false)
-                .map(() => [...emptyColumn]);
-        }
+    drawCell(xPos, yPos, alive) {
+      var actualX = xPos * this.windowScale;
+      var actualY = yPos * this.windowScale;
 
-        seedRandomly() {
-            this.cells = this.cells.map(outer => outer.map(() => Math.random() < 0.5));
-            this.redraw();
-        }
+      this.context.fillStyle = alive ? this.colorFn() : "rgb(255, 255, 255)";
+      this.context.fillRect(
+        actualX,
+        actualY,
+        this.windowScale,
+        this.windowScale
+      );
+    }
 
-        activateCellViaMouse(evt) {
-            var canvasPosition = this.gameWindow.getBoundingClientRect();
-            var mouseX = evt.clientX - canvasPosition.left;
-            var mouseY = evt.clientY - canvasPosition.top;
-
-            var xPos = (mouseX - (mouseX % this.windowScale))/this.windowScale;
-            var yPos = (mouseY - (mouseY % this.windowScale))/this.windowScale;
-            if ((evt.type === "click" && evt.button === 0) || (evt.type === "mousemove" && evt.buttons > 0)) {
-                this.toggleCell(xPos, yPos);
-            }
-        }
-
-        loop() {
-            if(!this.processing) {
-                this.processing = true;
-                this.iteration++;
-                this.processCells();
-                this.redraw();
-                this.processing = false;
-
-                if(this.continuous){
-                    window.setTimeout(function(obj){obj.loop()},this.speed, this);
+    processCells() {
+      this.cells = this.cells.map((currentColumn, x) =>
+        currentColumn.map((cell, y) => {
+          const liveNeighbors = [-1, 0, 1].reduce((countX, offsetX) => {
+            return (
+              countX +
+              [-1, 0, 1].reduce((countY, offsetY) => {
+                var neighborX = x + offsetX;
+                var neighborY = y + offsetY;
+                if (
+                  !(neighborX === x && neighborY === y) &&
+                  this.cells[neighborX] &&
+                  this.cells[neighborX][neighborY]
+                ) {
+                  return countY + 1;
                 }
-            }
-        }
+                return countY;
+              }, 0)
+            );
+          }, 0);
+          return this.applyRules(cell, liveNeighbors);
+        })
+      );
+    }
 
-        step(start) {
-            this.continuous = start;
-            this.loop();
-        }
+    applyRules(cell, neighborCount) {
+      return (
+        (!cell && neighborCount === 3) ||
+        (cell && (neighborCount === 2 || neighborCount === 3))
+      );
+    }
 
-        redraw() {
-            this.cells.forEach((column, x) => column.forEach((cell, y) => this.drawCell(x, y, cell)));
-        }
-
-        toggleCell(xPos,yPos) {
-            this.cells[xPos][yPos] = !this.cells[xPos][yPos];
-            this.drawCell(xPos, yPos, this.cells[xPos][yPos]);
-        }
-
-        drawCell(xPos, yPos, alive) {
-            var actualX = xPos * this.windowScale;
-            var actualY = yPos * this.windowScale;
-
-            this.context.fillStyle = alive ? this.colorFn() : "rgb(255, 255, 255)";
-            this.context.fillRect(actualX, actualY, this.windowScale, this.windowScale);
-        }
-
-        processCells() {
-            this.cells = this.cells.map((currentColumn, x) => currentColumn.map((cell, y) => {
-                const liveNeighbors = [-1, 0, 1].reduce((countX, offsetX) => {
-                    return countX + [-1, 0, 1].reduce((countY, offsetY) => {
-                        var neighborX = x + offsetX;
-                        var neighborY = y + offsetY;
-                        if(!(neighborX === x && neighborY === y) && this.cells[neighborX] && this.cells[neighborX][neighborY]) {
-                            return countY + 1;
-                        }
-                        return countY;
-                    }, 0);
-                }, 0);
-                return this.applyRules(cell, liveNeighbors);
-            }));
-        }
-
-        applyRules(cell, neighborCount) {
-            return (!cell && neighborCount === 3) ||
-                (cell && (neighborCount === 2 || neighborCount === 3));
-        }
-
-        colorCellsRandomly() {
-            return `rgb(
+    colorCellsRandomly() {
+      return `rgb(
                 ${this.randomColorChannel()},
                 ${this.randomColorChannel()},
                 ${this.randomColorChannel()}
             )`;
-        }
-
-        colorCellsCycle() {
-            if(this.colorIteration !== this.iteration){
-                this.colorIteration = this.iteration;
-                this.color = this.color.map(c => {
-                    const newColor = c + (Math.floor(Math.random() * 3) - 1) * Math.floor(Math.random() * 10);
-                    return Math.min(Math.max(newColor, 1), 254);
-                });
-            }
-            return `rgb(${this.color.join(",")})`;
-        }
     }
 
-    const gameObj = new Game;
+    colorCellsCycle() {
+      if (this.colorIteration !== this.iteration) {
+        this.colorIteration = this.iteration;
+        this.color = this.color.map(c => {
+          const newColor =
+            c +
+            (Math.floor(Math.random() * 3) - 1) *
+              Math.floor(Math.random() * 10);
+          return Math.min(Math.max(newColor, 1), 254);
+        });
+      }
+      return `rgb(${this.color.join(",")})`;
+    }
+  }
 
-    window.onload = () => {
-        gameObj.initialize();
-        gameObj.gameWindow.addEventListener("click", function(evt){gameObj.activateCellViaMouse(evt)}, false);
-        gameObj.gameWindow.addEventListener("mousemove", function(evt){gameObj.activateCellViaMouse(evt)}, false);
-    };
+  const gameObj = new Game();
+
+  window.onload = () => {
+    gameObj.initialize();
+    gameObj.gameWindow.addEventListener(
+      "click",
+      function(evt) {
+        gameObj.activateCellViaMouse(evt);
+      },
+      false
+    );
+    gameObj.gameWindow.addEventListener(
+      "mousemove",
+      function(evt) {
+        gameObj.activateCellViaMouse(evt);
+      },
+      false
+    );
+  };
 </script>
 
 <html>
-<body>
+  <body>
     <div>
-        <input type="button" value="Start" onClick="gameObj.step(true)">
-        <input type="button" value="Stop" onClick="gameObj.continuous = false">
-        <input type="button" value="Step" onClick="gameObj.step()">
-        <input type="button" value="seed randomly" onClick="gameObj.seedRandomly()">
+      <input type="button" value="Start" onClick="gameObj.step(true)" />
+      <input type="button" value="Stop" onClick="gameObj.continuous = false" />
+      <input type="button" value="Step" onClick="gameObj.step()" />
+      <input
+        type="button"
+        value="seed randomly"
+        onClick="gameObj.seedRandomly()"
+      />
     </div>
 
     <canvas id="displayWindow"></canvas>
-</body>
+  </body>
 </html>
