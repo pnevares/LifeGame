@@ -39,18 +39,11 @@
       this.gameWindow.setAttribute("width", gameWidth);
       this.gameWindow.setAttribute("height", gameHeight);
 
-      const gameColumns = Math.round(gameWidth / windowScale);
-      const gameRows = Math.round(gameHeight / windowScale);
-
       this.context = this.gameWindow.getContext("2d");
 
       this.colorFn = this.colorCellsCycle; // or this.colorCellsRandomly
 
-      // set initial cell states
-      const emptyColumn = Array(gameRows).fill(false);
-      this.cells = Array(gameColumns)
-        .fill(false)
-        .map(() => [...emptyColumn]);
+      this.sizeCells();
     }
 
     seedRandomly() {
@@ -173,6 +166,50 @@
     speed(factor) {
       this.settings.interval /= factor;
     }
+
+    scale(direction) {
+      if (this.settings.windowScale + direction > 0) {
+        this.settings.windowScale += direction;
+        this.sizeCells();
+      }
+    }
+
+    sizeCells() {
+      const { gameHeight, gameWidth, windowScale } = this.settings;
+
+      const gameColumns = Math.round(gameWidth / windowScale);
+      const gameRows = Math.round(gameHeight / windowScale);
+      const emptyColumn = Array(gameRows).fill(false);
+
+      if (!this.cells.length) {
+        // set initial cell states
+        this.cells = Array(gameColumns)
+          .fill(false)
+          .map(() => [...emptyColumn]);
+      } else {
+        const columnDifference = gameColumns - this.cells.length;
+        if (columnDifference < 0) {
+          this.cells = this.cells.slice(0, columnDifference);
+        } else if (columnDifference > 0) {
+          this.cells = this.cells.concat(
+            Array(columnDifference)
+              .fill(false)
+              .map(() => [...emptyColumn])
+          );
+        }
+
+        const rowDifference = gameRows - this.cells[0].length;
+        if (rowDifference < 0) {
+          this.cells = this.cells.map(c => {
+            return c.slice(0, rowDifference);
+          });
+        } else if (rowDifference > 0) {
+          this.cells = this.cells.map(c => {
+            return c.concat(Array(rowDifference).fill(false));
+          });
+        }
+      }
+    }
   }
 
   const gameObj = new Game();
@@ -201,6 +238,8 @@
       />
       <input type="button" value="Slower" onclick="gameObj.speed(0.5)" />
       <input type="button" value="Faster" onclick="gameObj.speed(2)" />
+      <input type="button" value="Smaller" onclick="gameObj.scale(-1)" />
+      <input type="button" value="Bigger" onclick="gameObj.scale(1)" />
     </div>
 
     <canvas id="displayWindow"></canvas>
