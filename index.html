@@ -7,14 +7,16 @@
 <script type="text/javascript">
   class Game {
     constructor() {
-      this.windowScale = 5;
-      this.gameWidth = 800;
-      this.gameHeight = 600;
-      this.interval = 25;
+      this.settings = {
+        gameHeight: 600,
+        gameWidth: 800,
+        interval: 25,
+        windowScale: 5
+      };
+
       this.gameWindow = null;
       this.context = null;
       this.continuous = true;
-
       this.cells = [];
       this.color = [
         this.randomColorChannel(),
@@ -31,18 +33,22 @@
     }
 
     initialize() {
+      const { gameHeight, gameWidth, windowScale } = this.settings;
+
       this.gameWindow = document.getElementById("displayWindow");
-      this.gameWindow.setAttribute("width", this.gameWidth);
-      this.gameWindow.setAttribute("height", this.gameHeight);
-      this.gameColumns = Math.round(this.gameWidth / this.windowScale);
-      this.gameRows = Math.round(this.gameHeight / this.windowScale);
+      this.gameWindow.setAttribute("width", gameWidth);
+      this.gameWindow.setAttribute("height", gameHeight);
+
+      const gameColumns = Math.round(gameWidth / windowScale);
+      const gameRows = Math.round(gameHeight / windowScale);
+
       this.context = this.gameWindow.getContext("2d");
 
       this.colorFn = this.colorCellsCycle; // or this.colorCellsRandomly
 
       // set initial cell states
-      const emptyColumn = Array(this.gameRows).fill(false);
-      this.cells = Array(this.gameColumns)
+      const emptyColumn = Array(gameRows).fill(false);
+      this.cells = Array(gameColumns)
         .fill(false)
         .map(() => [...emptyColumn]);
     }
@@ -55,12 +61,14 @@
     }
 
     activateCellViaMouse(evt) {
+      const { windowScale } = this.settings;
+
       var canvasPosition = this.gameWindow.getBoundingClientRect();
       var mouseX = evt.clientX - canvasPosition.left;
       var mouseY = evt.clientY - canvasPosition.top;
 
-      var xPos = (mouseX - (mouseX % this.windowScale)) / this.windowScale;
-      var yPos = (mouseY - (mouseY % this.windowScale)) / this.windowScale;
+      var xPos = (mouseX - (mouseX % windowScale)) / windowScale;
+      var yPos = (mouseY - (mouseY % windowScale)) / windowScale;
       if (
         (evt.type === "click" && evt.button === 0) ||
         (evt.type === "mousemove" && evt.buttons > 0)
@@ -78,7 +86,7 @@
         this.processing = false;
 
         if (this.continuous) {
-          window.setTimeout(obj => obj.loop(), this.interval, this);
+          window.setTimeout(obj => obj.loop(), this.settings.interval, this);
         }
       }
     }
@@ -100,16 +108,12 @@
     }
 
     drawCell(xPos, yPos, alive) {
-      var actualX = xPos * this.windowScale;
-      var actualY = yPos * this.windowScale;
+      const { windowScale } = this.settings;
+      var actualX = xPos * windowScale;
+      var actualY = yPos * windowScale;
 
       this.context.fillStyle = alive ? this.colorFn() : "rgb(255, 255, 255)";
-      this.context.fillRect(
-        actualX,
-        actualY,
-        this.windowScale,
-        this.windowScale
-      );
+      this.context.fillRect(actualX, actualY, windowScale, windowScale);
     }
 
     processCells() {
@@ -167,7 +171,7 @@
     }
 
     speed(factor) {
-      this.interval /= factor;
+      this.settings.interval /= factor;
     }
   }
 
