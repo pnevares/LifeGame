@@ -63,12 +63,12 @@
     activateCellViaMouse(evt) {
       const { windowScale } = this.settings;
 
-      var canvasPosition = this.gameWindow.getBoundingClientRect();
-      var mouseX = evt.clientX - canvasPosition.left;
-      var mouseY = evt.clientY - canvasPosition.top;
+      let canvasPosition = this.gameWindow.getBoundingClientRect();
+      let mouseX = evt.clientX - canvasPosition.left;
+      let mouseY = evt.clientY - canvasPosition.top;
 
-      var xPos = (mouseX - (mouseX % windowScale)) / windowScale;
-      var yPos = (mouseY - (mouseY % windowScale)) / windowScale;
+      let xPos = (mouseX - (mouseX % windowScale)) / windowScale;
+      let yPos = (mouseY - (mouseY % windowScale)) / windowScale;
       if (
         (evt.type === "click" && evt.button === 0) ||
         (evt.type === "mousemove" && evt.buttons > 0)
@@ -109,8 +109,8 @@
 
     drawCell(xPos, yPos, alive) {
       const { windowScale } = this.settings;
-      var actualX = xPos * windowScale;
-      var actualY = yPos * windowScale;
+      let actualX = xPos * windowScale;
+      let actualY = yPos * windowScale;
 
       this.context.fillStyle = alive ? this.colorFn() : "rgb(255, 255, 255)";
       this.context.fillRect(actualX, actualY, windowScale, windowScale);
@@ -123,8 +123,8 @@
             return (
               countX +
               [-1, 0, 1].reduce((countY, offsetY) => {
-                var neighborX = x + offsetX;
-                var neighborY = y + offsetY;
+                let neighborX = x + offsetX;
+                let neighborY = y + offsetY;
                 if (
                   !(neighborX === x && neighborY === y) &&
                   this.cells[neighborX] &&
