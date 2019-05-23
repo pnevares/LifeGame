@@ -8,15 +8,15 @@
   class Game {
     constructor() {
       this.settings = {
-        gameHeight: 600,
-        gameWidth: 800,
+        height: 600,
+        width: 800,
         interval: 25,
-        windowScale: 5
+        scale: 5
       };
 
       this.gameWindow = null;
       this.context = null;
-      this.continuous = true;
+      this.continuous = false;
       this.cells = [];
       this.color = [
         this.randomColorChannel(),
@@ -33,11 +33,11 @@
     }
 
     initialize() {
-      const { gameHeight, gameWidth, windowScale } = this.settings;
+      const { height, width, scale } = this.settings;
 
       this.gameWindow = document.getElementById("displayWindow");
-      this.gameWindow.setAttribute("width", gameWidth);
-      this.gameWindow.setAttribute("height", gameHeight);
+      this.gameWindow.setAttribute("width", width);
+      this.gameWindow.setAttribute("height", height);
 
       this.context = this.gameWindow.getContext("2d");
 
@@ -53,19 +53,16 @@
       this.redraw();
     }
 
-    activateCellViaMouse(evt) {
-      const { windowScale } = this.settings;
-
-      let canvasPosition = this.gameWindow.getBoundingClientRect();
-      let mouseX = evt.clientX - canvasPosition.left;
-      let mouseY = evt.clientY - canvasPosition.top;
-
-      let xPos = (mouseX - (mouseX % windowScale)) / windowScale;
-      let yPos = (mouseY - (mouseY % windowScale)) / windowScale;
+    activateCellViaMouse({ button, buttons, clientX, clientY, type }) {
       if (
-        (evt.type === "click" && evt.button === 0) ||
-        (evt.type === "mousemove" && evt.buttons > 0)
+        (type === "click" && button === 0) ||
+        (type === "mousemove" && buttons > 0)
       ) {
+        const { scale } = this.settings;
+        const { left, top } = this.gameWindow.getBoundingClientRect();
+        const [mouseX, mouseY] = [clientX - left, clientY - top];
+        const xPos = (mouseX - (mouseX % scale)) / scale;
+        const yPos = (mouseY - (mouseY % scale)) / scale;
         this.toggleCell(xPos, yPos);
       }
     }
@@ -101,12 +98,11 @@
     }
 
     drawCell(xPos, yPos, alive) {
-      const { windowScale } = this.settings;
-      let actualX = xPos * windowScale;
-      let actualY = yPos * windowScale;
+      const { scale } = this.settings;
+      const [actualX, actualY] = [xPos * scale, yPos * scale];
 
       this.context.fillStyle = alive ? this.colorFn() : "rgb(255, 255, 255)";
-      this.context.fillRect(actualX, actualY, windowScale, windowScale);
+      this.context.fillRect(actualX, actualY, scale, scale);
     }
 
     processCells() {
@@ -116,8 +112,7 @@
             return (
               countX +
               [-1, 0, 1].reduce((countY, offsetY) => {
-                let neighborX = x + offsetX;
-                let neighborY = y + offsetY;
+                const [neighborX, neighborY] = [x + offsetX, y + offsetY];
                 if (
                   !(neighborX === x && neighborY === y) &&
                   this.cells[neighborX] &&
@@ -129,15 +124,11 @@
               }, 0)
             );
           }, 0);
-          return this.applyRules(cell, liveNeighbors);
+          return (
+            (!cell && liveNeighbors === 3) ||
+            (cell && (liveNeighbors === 2 || liveNeighbors === 3))
+          );
         })
-      );
-    }
-
-    applyRules(cell, neighborCount) {
-      return (
-        (!cell && neighborCount === 3) ||
-        (cell && (neighborCount === 2 || neighborCount === 3))
       );
     }
 
@@ -163,31 +154,30 @@
       return `rgb(${this.color.join(",")})`;
     }
 
-    speed(factor) {
-      this.settings.interval /= factor;
-    }
-
-    scale(direction) {
-      if (this.settings.windowScale + direction > 0) {
-        this.settings.windowScale += direction;
+    updateScale(direction) {
+      if (this.settings.scale + direction > 0) {
+        this.settings.scale += direction;
         this.sizeCells();
       }
     }
 
-    sizeCells() {
-      const { gameHeight, gameWidth, windowScale } = this.settings;
+    updateSpeed(factor) {
+      this.settings.interval /= factor;
+    }
 
-      const gameColumns = Math.round(gameWidth / windowScale);
-      const gameRows = Math.round(gameHeight / windowScale);
-      const emptyColumn = Array(gameRows).fill(false);
+    sizeCells() {
+      const { height, width, scale } = this.settings;
+      const columns = Math.round(width / scale);
+      const rows = Math.round(height / scale);
+      const emptyColumn = Array(rows).fill(false);
 
       if (!this.cells.length) {
         // set initial cell states
-        this.cells = Array(gameColumns)
+        this.cells = Array(columns)
           .fill(false)
           .map(() => [...emptyColumn]);
       } else {
-        const columnDifference = gameColumns - this.cells.length;
+        const columnDifference = columns - this.cells.length;
         if (columnDifference < 0) {
           this.cells = this.cells.slice(0, columnDifference);
         } else if (columnDifference > 0) {
@@ -198,7 +188,7 @@
           );
         }
 
-        const rowDifference = gameRows - this.cells[0].length;
+        const rowDifference = rows - this.cells[0].length;
         if (rowDifference < 0) {
           this.cells = this.cells.map(c => {
             return c.slice(0, rowDifference);
@@ -228,18 +218,14 @@
 <html>
   <body>
     <div>
-      <input type="button" value="Start" onclick="gameObj.step(true)" />
-      <input type="button" value="Stop" onclick="gameObj.continuous = false" />
-      <input type="button" value="Step" onclick="gameObj.step()" />
-      <input
-        type="button"
-        value="Random Seed"
-        onClick="gameObj.seedRandomly()"
-      />
-      <input type="button" value="Slower" onclick="gameObj.speed(0.5)" />
-      <input type="button" value="Faster" onclick="gameObj.speed(2)" />
-      <input type="button" value="Smaller" onclick="gameObj.scale(-1)" />
-      <input type="button" value="Bigger" onclick="gameObj.scale(1)" />
+      <button onclick="gameObj.step(true)">Start</button>
+      <button onclick="gameObj.continuous = false">Stop</button>
+      <button onclick="gameObj.step(false)">Step</button>
+      <button onclick="gameObj.seedRandomly()">Random Seed</button>
+      <button onclick="gameObj.updateSpeed(0.5)">Slower</button>
+      <button onclick="gameObj.updateSpeed(2)">Faster</button>
+      <button onclick="gameObj.updateScale(-1)">Smaller</button>
+      <button onclick="gameObj.updateScale(1)">Bigger</button>
     </div>
 
     <canvas id="displayWindow"></canvas>
